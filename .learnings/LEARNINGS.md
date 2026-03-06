@@ -197,3 +197,71 @@ Agent 构成：
 - Pattern-Key: notification.dingtalk
 
 ---
+
+## [LRN-20260306-007] public_review_page_and_details
+
+**Logged**: 2026-03-06T13:13:00+08:00
+**Priority**: high
+**Status**: resolved
+**Area**: frontend
+
+### Summary
+用户反馈三个问题需要修复：
+1. 公开评价页面报错（不存在）
+2. 通知链接要用公网 IP，评价对象显示要修复
+3. 评价后要能看到打分详情
+
+### Details
+修复：
+1. 创建 public_review.html 公开评价页面
+2. 添加 /review 路由和 /api/submit_review API
+3. 通知链接改为 http://47.88.19.149:5000
+4. 评价对象显示优化（"所有人"改为"相关人员"）
+5. 创建 review_details.html 评价详情页面
+6. 显示详细打分信息（问题统计/加分项/扣分详情）
+
+### Resolution
+- **Resolved**: 2026-03-06T13:15:00+08:00
+- **Notes**: 完善公开评价功能和详情展示
+
+### Metadata
+- Source: user_feedback
+- Tags: web, public-review, details, bug-fix
+- Pattern-Key: web.public_review
+
+---
+
+## [LRN-20260306-008] proactive_self_improvement
+
+**Logged**: 2026-03-06T14:29:00+08:00
+**Priority**: critical
+**Status**: resolved
+**Area**: core
+
+### Summary
+用户教导：要主动学习，如何更聪明
+
+### Details
+核心教导：
+- 不要等用户说问题，要主动检查
+- 学会自我监控和恢复
+- 从每次错误中学习
+- 持续改进，不断进化
+
+实现：
+1. 创建 GROWTH-PROTOCOL.md 成长协议
+2. 建立学习机制（错误驱动/用户反馈/主动学习）
+3. 创建自我改进循环（每日/每周/每月）
+4. 定义成长目标和行为准则
+5. 设置成长指标和进化路径
+
+### Resolution
+- **Resolved**: 2026-03-06T14:30:00+08:00
+- **Notes**: 建立完整的自我成长机制
+
+### Metadata
+- Source: user_guidance
+- Tags: self-improvement, growth, learning, proactive
+- Pattern-Key: growth.proactive_learning
+
+---
