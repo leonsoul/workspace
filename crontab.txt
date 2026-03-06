@@ -1,0 +1,20 @@
+# ClawOS Cron Jobs
+# 编辑：crontab -e
+# 查看：crontab -l
+# 日志：grep CRON /var/log/syslog
+
+# ========== 自动同步（每 30 分钟） ==========
+# 检测 workspace 变更并自动提交推送到 GitHub
+*/30 * * * * /home/admin/.openclaw/workspace/projects/git-auto-sync/sync.sh >> /dev/null 2>&1
+
+# ========== 每日站会（每天早上 9 点） ==========
+# 生成昨日完成/今日计划报告
+0 9 * * * /home/admin/.openclaw/workspace/projects/daily-standup/standup.sh >> /dev/null 2>&1
+
+# ========== 健康检查（可选 - 每小时） ==========
+# 检查系统状态（CPU/内存/磁盘）
+# 0 * * * * /opt/scripts/healthcheck.sh
+
+# ========== 备份（可选 - 每周日凌晨 2 点） ==========
+# 完整备份 workspace
+# 0 2 * * 0 tar -czf /backup/workspace_$(date +\%Y\%m\%d).tar.gz /home/admin/.openclaw/workspace
