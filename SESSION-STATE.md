@@ -32,7 +32,7 @@
 - [x] 实现 ClawOS 多 Agent 架构（中枢 + 5 个专用 agent）- ✅ 完成
 - [x] 安装 Skills（playwright/selenium/python）- ✅ 完成
 - [x] 配置 Cron 定时任务 - ✅ 完成
-- [ ] 配置 GitHub 远程仓库并推送
+- [x] 配置 GitHub 远程仓库并推送 - ✅ 完成
 - [ ] 测试多 Agent 路由功能
 
 ---

@@ -65,13 +65,20 @@ git branch -d feature-xxx
 ### 远程仓库
 ```bash
 # 添加远程
-git remote add origin git@github.com:leonsoul/repo.git
+git remote add origin git@github.com:leonsoul/workspace.git
 
 # 查看远程
 git remote -v
 
 # 删除远程
 git remote remove origin
+```
+
+### 当前配置
+```
+Remote: origin
+URL: git@github.com:leonsoul/workspace.git
+Branch: master → origin/master
 ```
 
 ---
