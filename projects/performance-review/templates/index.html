@@ -72,12 +72,12 @@
                     <a href="/member/{{ member.id }}/review" class="flex-1 bg-green-600 text-white text-center py-2 rounded hover:bg-green-700">
                         <i class="fas fa-star"></i> 评价
                     </a>
+                    <a href="/member/{{ member.id }}/review-details" class="flex-1 bg-purple-600 text-white text-center py-2 rounded hover:bg-purple-700">
+                        <i class="fas fa-chart-bar"></i> 详情
+                    </a>
                     <a href="/member/{{ member.id }}/history" class="flex-1 bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700">
                         <i class="fas fa-history"></i> 历史
                     </a>
-                    <button onclick="editMember('{{ member.id }}', '{{ member.name }}')" class="px-4 bg-gray-600 text-white py-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-edit"></i>
-                    </button>
                 </div>
             </div>
             {% endfor %}

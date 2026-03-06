@@ -303,8 +303,18 @@ def send_dingtalk_notification(invitation):
         webhook = f"https://oapi.dingtalk.com/robot/send?access_token={access_token}&timestamp={timestamp}&sign={sign}"
         
         invitee = invitation.get('invitee_email', '')
-        member_name = invitation.get('member_name', '某人')
+        member_name = invitation.get('member_name', '')
         invitee_name = invitation.get('invitee_name', '同事')
+        
+        # 处理评价对象显示
+        if not member_name or member_name == '-- 评价所有人 --':
+            member_display = '相关人员'
+        else:
+            member_display = member_name
+        
+        # 使用公网 IP
+        public_ip = "47.88.19.149"
+        review_link = f"http://{public_ip}:5000/review?invite_id={invitation['id']}"
         
         # 判断是手机号还是邮箱
         if invitee.startswith('1') and len(invitee) == 11 and invitee.isdigit():
@@ -313,9 +323,9 @@ def send_dingtalk_notification(invitation):
             
 {invitee_name}，你好！
 
-邀请你对 **{member_name}** 进行工作质量评价。
+邀请你对 **{member_display}** 进行工作质量评价。
 
-评价链接：http://localhost:5000/review?invite_id={invitation['id']}
+评价链接：{review_link}
 有效期：7 天
 
 请客观公正地进行评价，谢谢配合！
@@ -419,6 +429,96 @@ def invitations():
     app.jinja_env.filters['timestamp_to_date'] = timestamp_to_date
     
     return render_template('invitations.html', invitations=invitations)
+
+@app.route('/review')
+def public_review():
+    """公开评价页面（通过邀请链接访问）"""
+    invite_id = request.args.get('invite_id')
+    
+    if not invite_id:
+        return render_template('public_review.html', invitation=None, members=[])
+    
+    invitations = load_invitations()
+    invitation = next((i for i in invitations if i['id'] == invite_id), None)
+    
+    if not invitation:
+        return render_template('public_review.html', invitation=None, members=[])
+    
+    # 检查是否过期
+    expires_at = invitation.get('expires_at', 0)
+    if datetime.now().timestamp() * 1000 > expires_at:
+        return render_template('public_review.html', invitation=None, members=[])
+    
+    members = load_members()
+    return render_template('public_review.html', invitation=invitation, members=members)
+
+
+@app.route('/api/submit_review', methods=['POST'])
+def api_submit_review():
+    """API: 提交评价"""
+    data = request.json
+    
+    member_id = data.get('member_id')
+    member_name = data.get('member_name')
+    issues = data.get('issues', [])
+    bonuses = data.get('bonuses', [])
+    attitude_issue = data.get('attitude_issue', False)
+    comment = data.get('comment', '')
+    reviewer = data.get('reviewer', '匿名')
+    invite_id = data.get('invite_id')
+    
+    # 计算评分
+    score_result = calculate_score(issues, bonuses, attitude_issue)
+    
+    # 保存评价
+    review = {
+        'id': datetime.now().strftime('%Y%m%d%H%M%S'),
+        'member_id': member_id,
+        'member_name': member_name,
+        'score': score_result['score'],
+        'level': score_result['level'],
+        'color': score_result['color'],
+        'details': score_result['details'],
+        'issues': issues,
+        'bonuses': bonuses,
+        'attitude_issue': attitude_issue,
+        'comment': comment,
+        'reviewer': reviewer,
+        'invite_id': invite_id,
+        'created_at': datetime.now().isoformat()
+    }
+    
+    save_review(review)
+    
+    # 更新邀请状态
+    if invite_id:
+        invitations = load_invitations()
+        for inv in invitations:
+            if inv['id'] == invite_id:
+                inv['status'] = 'completed'
+                inv['completed_at'] = datetime.now().isoformat()
+                break
+        with open(INVITATIONS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(invitations, f, ensure_ascii=False, indent=2)
+    
+    return jsonify({'success': True, 'review': review})
+
+
+@app.route('/member/<member_id>/review-details')
+def review_details(member_id):
+    """评价详情页面（查看打分详情）"""
+    members = load_members()
+    member = next((m for m in members if m['id'] == member_id), None)
+    
+    if not member:
+        return jsonify({'success': False, 'error': '人员不存在'}), 404
+    
+    reviews = load_reviews()
+    member_reviews = [r for r in reviews if r.get('member_id') == member_id]
+    member_reviews.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    return render_template('review_details.html', member=member, reviews=member_reviews)
+
 
 @app.route('/stats')
 def stats():

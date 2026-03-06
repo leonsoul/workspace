@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "20260306131107",
+    "member_id": "",
+    "member_name": "-- 评价所有人 --",
+    "invitee_email": "15191333567",
+    "invitee_name": "bene",
+    "message": "对xxx进行评价",
+    "status": "pending",
+    "created_at": "2026-03-06T13:11:07.416345",
+    "expires_at": 1773378667416.3499,
+    "send_method": "mobile"
+  }
+]
