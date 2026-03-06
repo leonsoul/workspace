@@ -1,0 +1,36 @@
+# 敏感信息
+*.env
+*.key
+*.pem
+*.secret
+
+# 日志文件
+*.log
+projects/*/sync.log
+
+# 临时文件
+.tmp/
+.cache/
+*.tmp
+*.swp
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.bak
+
+# 报告（可选，如果想保留就注释掉）
+# projects/daily-standup/reports/*.md
+
+# OpenClaw 运行时状态
+.openclaw/workspace-state.json
+
+# 技能元数据（可选）
+# skills/**/_meta.json
+# skills/**/.clawhub/
+# skills/**/.clawdhub/
+
+# 根目录元数据
+.clawdhub/
+.clawhub/
