@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评价 - {{ member.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg mb-8">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="/" class="text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </a>
+                <h1 class="text-2xl font-bold text-gray-800">评价：{{ member.name }}</h1>
+                <div></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-xl font-bold mb-6">问题记录</h2>
+
+            <!-- 问题列表 -->
+            <div id="issuesContainer" class="space-y-4 mb-8">
+                <div class="issue-item bg-gray-50 p-4 rounded-lg">
+                    <div class="grid grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-700 mb-2">问题等级</label>
+                            <select class="issue-level w-full border rounded-lg px-3 py-2">
+                                <option value="P3">P3 - 轻微</option>
+                                <option value="P2">P2 - 一般</option>
+                                <option value="P1">P1 - 严重</option>
+                                <option value="P0">P0 - 致命</option>
+                            </select>
+                        </div>
+                        <div class="col-span-3">
+                            <label class="block text-sm text-gray-700 mb-2">问题描述</label>
+                            <input type="text" class="issue-desc w-full border rounded-lg px-3 py-2" placeholder="描述具体问题">
+                        </div>
+                    </div>
+                    <button onclick="removeIssue(this)" class="mt-2 text-red-600 hover:text-red-800 text-sm">
+                        <i class="fas fa-trash"></i> 删除
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="addIssue()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 mb-8">
+                <i class="fas fa-plus"></i> 添加问题
+            </button>
+
+            <!-- 加分项 -->
+            <h2 class="text-xl font-bold mb-4">加分项</h2>
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <label class="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input type="checkbox" class="bonus-checkbox" value="continuous_clean">
+                    <div>
+                        <div class="font-semibold">连续 3 次无问题</div>
+                        <div class="text-sm text-gray-500">+0.5 分</div>
+                    </div>
+                </label>
+                <label class="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input type="checkbox" class="bonus-checkbox" value="innovation">
+                    <div>
+                        <div class="font-semibold">技术创新/优化</div>
+                        <div class="text-sm text-gray-500">+0.5 分</div>
+                    </div>
+                </label>
+                <label class="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input type="checkbox" class="bonus-checkbox" value="fix_proactive">
+                    <div>
+                        <div class="font-semibold">主动修复问题</div>
+                        <div class="text-sm text-gray-500">+0.25 分</div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- 态度问题 -->
+            <div class="mb-8">
+                <label class="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-red-50">
+                    <input type="checkbox" id="attitudeIssue" class="text-red-600">
+                    <div>
+                        <div class="font-semibold text-red-600">态度问题</div>
+                        <div class="text-sm text-gray-500">-1 分（对待质量问题态度差）</div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- 评价备注 -->
+            <div class="mb-8">
+                <label class="block text-gray-700 mb-2">评价备注</label>
+                <textarea id="comment" rows="4" class="w-full border rounded-lg px-4 py-2" placeholder="写下你的评价和建议..."></textarea>
+            </div>
+
+            <!-- 评价人 -->
+            <div class="mb-8">
+                <label class="block text-gray-700 mb-2">评价人</label>
+                <input type="text" id="reviewer" class="w-full border rounded-lg px-4 py-2" placeholder="你的名字">
+            </div>
+
+            <!-- 实时评分预览 -->
+            <div class="bg-blue-50 p-6 rounded-lg mb-8">
+                <h3 class="font-bold text-lg mb-4">评分预览</h3>
+                <div class="grid grid-cols-4 gap-4 text-center">
+                    <div>
+                        <div class="text-gray-600">基础分</div>
+                        <div class="text-2xl font-bold">5.0</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-600">扣分</div>
+                        <div id="previewPenalty" class="text-2xl font-bold text-red-600">-0</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-600">加分</div>
+                        <div id="previewBonus" class="text-2xl font-bold text-green-600">+0</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-600">最终评分</div>
+                        <div id="previewScore" class="text-3xl font-bold text-blue-600">5.0</div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <span id="previewLevel" class="px-4 py-2 rounded-full text-white font-semibold">未评价</span>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <button onclick="submitReview()" class="w-full bg-green-600 text-white py-4 rounded-lg hover:bg-green-700 text-lg font-bold">
+                <i class="fas fa-check"></i> 提交评价
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const member = {{ member | tojson }};
+
+        function addIssue() {
+            const container = document.getElementById('issuesContainer');
+            const issue = document.createElement('div');
+            issue.className = 'issue-item bg-gray-50 p-4 rounded-lg';
+            issue.innerHTML = `
+                <div class="grid grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-700 mb-2">问题等级</label>
+                        <select class="issue-level w-full border rounded-lg px-3 py-2">
+                            <option value="P3">P3 - 轻微</option>
+                            <option value="P2">P2 - 一般</option>
+                            <option value="P1">P1 - 严重</option>
+                            <option value="P0">P0 - 致命</option>
+                        </select>
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-sm text-gray-700 mb-2">问题描述</label>
+                        <input type="text" class="issue-desc w-full border rounded-lg px-3 py-2" placeholder="描述具体问题">
+                    </div>
+                </div>
+                <button onclick="removeIssue(this)" class="mt-2 text-red-600 hover:text-red-800 text-sm">
+                    <i class="fas fa-trash"></i> 删除
+                </button>
+            `;
+            container.appendChild(issue);
+            updatePreview();
+        }
+
+        function removeIssue(btn) {
+            btn.parentElement.remove();
+            updatePreview();
+        }
+
+        function updatePreview() {
+            let penalty = 0;
+            document.querySelectorAll('.issue-item').forEach(item => {
+                const level = item.querySelector('.issue-level').value;
+                if (level === 'P0') penalty += 5;
+                else if (level === 'P1') penalty += 2;
+                else if (level === 'P2') penalty += 0.5;
+                else if (level === 'P3') penalty += 0.25;
+            });
+
+            let bonus = 0;
+            document.querySelectorAll('.bonus-checkbox:checked').forEach(cb => {
+                if (cb.value === 'continuous_clean' || cb.value === 'innovation') bonus += 0.5;
+                else if (cb.value === 'fix_proactive') bonus += 0.25;
+            });
+
+            if (document.getElementById('attitudeIssue').checked) {
+                penalty += 1;
+            }
+
+            // 检查是否有 P0
+            const hasP0 = Array.from(document.querySelectorAll('.issue-level')).some(s => s.value === 'P0');
+            let score = hasP0 ? 0 : Math.max(0, Math.min(5, 5 - penalty + bonus));
+
+            document.getElementById('previewPenalty').textContent = `-${penalty}`;
+            document.getElementById('previewBonus').textContent = `+${bonus}`;
+            document.getElementById('previewScore').textContent = score.toFixed(2);
+
+            const levels = [
+                [4.5, "卓越", "#9333EA"],
+                [4.0, "优秀", "#10B981"],
+                [3.75, "良好", "#3B82F6"],
+                [3.5, "正常", "#6B7280"],
+                [3.0, "及格", "#F59E0B"],
+                [2.0, "质量差", "#EF4444"],
+                [1.0, "严重质量问题", "#DC2626"],
+                [0.0, "完全不符合", "#991B1B"]
+            ];
+
+            let levelName = "完全不符合";
+            let levelColor = "#991B1B";
+            for (const [threshold, name, color] of levels) {
+                if (score >= threshold) {
+                    levelName = name;
+                    levelColor = color;
+                    break;
+                }
+            }
+
+            const levelEl = document.getElementById('previewLevel');
+            levelEl.textContent = levelName;
+            levelEl.style.backgroundColor = levelColor;
+        }
+
+        async function submitReview() {
+            const issues = [];
+            document.querySelectorAll('.issue-item').forEach(item => {
+                issues.push({
+                    level: item.querySelector('.issue-level').value,
+                    description: item.querySelector('.issue-desc').value
+                });
+            });
+
+            const bonuses = [];
+            document.querySelectorAll('.bonus-checkbox:checked').forEach(cb => {
+                bonuses.push(cb.value);
+            });
+
+            const data = {
+                issues: issues,
+                bonuses: bonuses,
+                attitude_issue: document.getElementById('attitudeIssue').checked,
+                comment: document.getElementById('comment').value,
+                reviewer: document.getElementById('reviewer').value || '匿名'
+            };
+
+            const res = await fetch(`/member/${member.id}/review`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert('评价成功！');
+                window.location.href = `/member/${member.id}/history`;
+            } else {
+                alert('评价失败');
+            }
+        }
+
+        // 实时更新预览
+        document.querySelectorAll('.issue-level, .issue-desc, .bonus-checkbox, #attitudeIssue').forEach(el => {
+            el.addEventListener('change', updatePreview);
+            el.addEventListener('input', updatePreview);
+        });
+
+        // 初始化
+        updatePreview();
+    </script>
+</body>
+</html>
