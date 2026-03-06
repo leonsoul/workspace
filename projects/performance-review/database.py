@@ -46,14 +46,20 @@ class Member(Base):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'is_active': self.is_active,
             'review_count': len(self.reviews),
-            'average_score': self.get_average_score()
+            'average_score': self.average_score
         }
     
-    def get_average_score(self):
+    @property
+    def average_score(self):
+        """计算平均分"""
         if not self.reviews:
             return 0.0
         scores = [r.score for r in self.reviews]
         return round(sum(scores) / len(scores), 2)
+    
+    def get_average_score(self):
+        """兼容旧方法"""
+        return self.average_score
 
 
 class Review(Base):

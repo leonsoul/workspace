@@ -55,11 +55,12 @@
                     </span>
                 </div>
                 
+                {% set avg = member.get_average_score() %}
                 <div class="space-y-2 mb-4">
                     <div class="flex justify-between">
                         <span class="text-gray-600">平均评分</span>
-                        <span class="font-bold {% if member.average_score >= 4 %}text-green-600{% elif member.average_score >= 3 %}text-blue-600{% else %}text-red-600{% endif %}">
-                            {{ member.average_score }} / 5.0
+                        <span class="font-bold {% if avg >= 4 %}text-green-600{% elif avg >= 3 %}text-blue-600{% else %}text-red-600{% endif %}">
+                            {{ avg }} / 5.0
                         </span>
                     </div>
                     <div class="flex justify-between">
