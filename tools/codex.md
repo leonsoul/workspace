@@ -11,11 +11,20 @@ Codex 是 OpenAI 的代码执行工具，用于：
 
 ---
 
-## 安装
+## 安装完成
 
+### ✅ 已安装
 ```bash
+# Python OpenAI 库
 pip3 install openai --user
+
+# Codex CLI（需要 Node.js）
+npm install -g @openai/codex
 ```
+
+### ✅ 配置文件
+- `.env.codex` - 环境变量模板
+- `tools/codex.md` - 使用文档
 
 ---
 
@@ -23,13 +32,14 @@ pip3 install openai --user
 
 ### 环境变量
 
-编辑 `~/.bashrc` 或 `.env` 文件：
+编辑 `~/.bashrc` 或复制 `.env.codex`：
 
 ```bash
 export OPENAI_API_KEY="sk-xxxxxxxx"
 export CODEX_MODEL="gpt-5-codex"
 export CODEX_EXEC_TIMEOUT=1800
 export CODEX_EXEC_FULL_AUTO=true
+export PROJECT_ALLOWLIST="/home/admin/.openclaw/workspace,/tmp"
 ```
 
 ### 在 OpenClaw 中使用
@@ -53,7 +63,7 @@ export CODEX_EXEC_FULL_AUTO=true
 
 ## 使用方式
 
-### 1. 直接调用
+### 1. 直接调用（Python OpenAI）
 
 ```python
 from openai import OpenAI
@@ -70,26 +80,51 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-### 2. 通过 Agent 调用
+### 2. 通过 Codex CLI
+
+```bash
+# 沙盒模式（推荐）
+codex exec --full-auto "写个快速排序算法"
+
+# 无限制模式（危险）
+codex --yolo "写个快速排序算法"
+
+# PR 审查
+codex review --base main
+```
+
+### 3. 通过 Agent 调用
 
 ```
-用户：用 Codex 写个排序算法
+对我说：
+"用 Codex 写个排序算法"
 → Dev Agent 自动调用 Codex
 → 生成并执行代码
 → 返回结果
 ```
 
-### 3. 在 skills_bene 中集成
+### 4. 在 skills_bene 中使用
 
-编辑 `skills_bene/integration/openclaw-integration-config.json`：
+```bash
+cd /home/admin/.openclaw/workspace/projects/skills_bene
 
-```json
-{
-  "codex": {
-    "enabled": true,
-    "use_for": ["code-generation", "code-review", "testing"]
-  }
-}
+# 修复 bug
+python3 skills/openclaw-integration/codex_executor.py \
+  --mode fix \
+  --project-root /home/admin/.openclaw/workspace \
+  --task "修复人员评价系统的 average_score 错误"
+
+# 生成测试
+python3 skills/openclaw-integration/codex_executor.py \
+  --mode testgen \
+  --project-root /home/admin/.openclaw/workspace \
+  --task "为人员评价系统生成单元测试"
+
+# 代码重构
+python3 skills/openclaw-integration/codex_executor.py \
+  --mode refactor \
+  --project-root /home/admin/.openclaw/workspace \
+  --task "优化数据库连接管理"
 ```
 
 ---
@@ -140,6 +175,13 @@ A: 使用 PROJECT_ALLOWLIST 和 CODEX_NO_* 环境变量
 
 ---
 
-**状态**: ✅ 已安装  
-**版本**: openai latest  
+## 状态
+
+| 组件 | 状态 |
+|------|------|
+| openai Python 库 | ✅ 已安装 (v2.26.0) |
+| Codex CLI | ⏳ 安装中 |
+| 配置文件 | ✅ 已创建 (.env.codex) |
+| skills_bene 集成 | ✅ 已配置 |
+
 **最后更新**: 2026-03-06
