@@ -33,6 +33,7 @@
 - [x] 安装 Skills（playwright/selenium/python）- ✅ 完成
 - [x] 配置 Cron 定时任务 - ✅ 完成
 - [x] 配置 GitHub 远程仓库并推送 - ✅ 完成
+- [x] 配置 Model 策略（不同 Agent 不同模型）- ✅ 完成
 - [ ] 测试多 Agent 路由功能
 
 ---
