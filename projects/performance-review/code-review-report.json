@@ -1,0 +1,32 @@
+{
+  "project": "performance-review",
+  "timestamp": "1772794952.7432659",
+  "files_checked": 12,
+  "syntax_errors": [],
+  "issues": [
+    {
+      "file": "health-check-advanced.py",
+      "type": "security",
+      "severity": "high",
+      "message": "发现硬编码的敏感信息（access_token/secret）"
+    },
+    {
+      "file": "test_dingtalk.py",
+      "type": "security",
+      "severity": "high",
+      "message": "发现硬编码的敏感信息（access_token/secret）"
+    },
+    {
+      "file": "health-check.py",
+      "type": "security",
+      "severity": "high",
+      "message": "发现硬编码的敏感信息（access_token/secret）"
+    }
+  ],
+  "summary": {
+    "total_issues": 3,
+    "high": 3,
+    "medium": 0,
+    "low": 0
+  }
+}
