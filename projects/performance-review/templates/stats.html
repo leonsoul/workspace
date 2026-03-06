@@ -3,178 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>统计</title>
+    <title>数据统计 - 人员评价系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-card.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .stat-card.blue { background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%); }
+        .stat-card.orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    </style>
 </head>
 <body class="bg-gray-100">
-    <nav class="bg-white shadow-lg mb-8">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center py-4">
-                <a href="/" class="text-blue-600 hover:text-blue-800">
-                    <i class="fas fa-arrow-left"></i> 返回
-                </a>
-                <h1 class="text-2xl font-bold text-gray-800">数据统计</h1>
-                <div></div>
+                <h1 class="text-2xl font-bold text-gray-800">🦞 人员评分评价系统</h1>
+                <div class="flex space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-blue-600"><i class="fas fa-users"></i> 人员列表</a>
+                    <a href="/stats" class="text-blue-600 hover:text-blue-800"><i class="fas fa-chart-bar"></i> 统计</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-4">
-        <!-- 总览 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-gray-600">总人数</div>
-                        <div class="text-3xl font-bold text-blue-600">{{ total_members }}</div>
-                    </div>
-                    <i class="fas fa-users text-4xl text-blue-300"></i>
-                </div>
+    <!-- 主内容 -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card rounded-xl p-6">
+                <div class="text-sm opacity-80">总人员数</div>
+                <div class="text-4xl font-bold mt-2" id="totalMembers">-</div>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-gray-600">评价次数</div>
-                        <div class="text-3xl font-bold text-green-600">{{ total_reviews }}</div>
-                    </div>
-                    <i class="fas fa-clipboard-list text-4xl text-green-300"></i>
-                </div>
+            <div class="stat-card green rounded-xl p-6">
+                <div class="text-sm opacity-80">总评价数</div>
+                <div class="text-4xl font-bold mt-2" id="totalReviews">-</div>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-gray-600">平均分</div>
-                        <div class="text-3xl font-bold text-purple-600">{{ avg_score }}</div>
-                    </div>
-                    <i class="fas fa-chart-line text-4xl text-purple-300"></i>
-                </div>
+            <div class="stat-card blue rounded-xl p-6">
+                <div class="text-sm opacity-80">平均分</div>
+                <div class="text-4xl font-bold mt-2" id="avgScore">-</div>
+            </div>
+            <div class="stat-card orange rounded-xl p-6">
+                <div class="text-sm opacity-80">本月评价</div>
+                <div class="text-4xl font-bold mt-2" id="monthReviews">-</div>
             </div>
         </div>
 
-        <!-- 等级分布 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-bold mb-4">等级分布</h3>
-                <canvas id="levelChart"></canvas>
+        <!-- 图表行 1 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700"><i class="fas fa-chart-pie"></i> 等级分布</h3>
+                <div id="levelChart" style="height: 350px;"></div>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-bold mb-4">评分分布</h3>
-                <canvas id="scoreChart"></canvas>
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700"><i class="fas fa-chart-bar"></i> 人员评分排名</h3>
+                <div id="rankingChart" style="height: 350px;"></div>
             </div>
         </div>
 
-        <!-- 排名 -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-bold mb-4">人员排名</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="text-left py-3 px-4">排名</th>
-                            <th class="text-left py-3 px-4">姓名</th>
-                            <th class="text-left py-3 px-4">平均分</th>
-                            <th class="text-left py-3 px-4">评价次数</th>
-                            <th class="text-left py-3 px-4">等级</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in rankings %}
-                        <tr class="border-t hover:bg-gray-50">
-                            <td class="py-3 px-4">
-                                {% if loop.index == 1 %}
-                                    <span class="text-yellow-600 font-bold">🥇 {{ loop.index }}</span>
-                                {% elif loop.index == 2 %}
-                                    <span class="text-gray-600 font-bold">🥈 {{ loop.index }}</span>
-                                {% elif loop.index == 3 %}
-                                    <span class="text-orange-600 font-bold">🥉 {{ loop.index }}</span>
-                                {% else %}
-                                    {{ loop.index }}
-                                {% endif %}
-                            </td>
-                            <td class="py-3 px-4 font-semibold">{{ item.name }}</td>
-                            <td class="py-3 px-4">
-                                <span class="{% if item.score >= 4 %}text-green-600{% elif item.score >= 3 %}text-blue-600{% else %}text-red-600{% endif %} font-bold">
-                                    {{ item.score }}
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-gray-600">{{ item.count }}</td>
-                            <td class="py-3 px-4">
-                                {% if item.score >= 4.5 %}
-                                    {% set level = "卓越" %}{% set color = "#9333EA" %}
-                                {% elif item.score >= 4.0 %}
-                                    {% set level = "优秀" %}{% set color = "#10B981" %}
-                                {% elif item.score >= 3.75 %}
-                                    {% set level = "良好" %}{% set color = "#3B82F6" %}
-                                {% elif item.score >= 3.5 %}
-                                    {% set level = "正常" %}{% set color = "#6B7280" %}
-                                {% elif item.score >= 3.0 %}
-                                    {% set level = "及格" %}{% set color = "#F59E0B" %}
-                                {% elif item.score >= 2.0 %}
-                                    {% set level = "质量差" %}{% set color = "#EF4444" %}
-                                {% elif item.score >= 1.0 %}
-                                    {% set level = "严重质量问题" %}{% set color = "#DC2626" %}
-                                {% else %}
-                                    {% set level = "完全不符合" %}{% set color = "#991B1B" %}
-                                {% endif %}
-                                <span class="px-3 py-1 rounded-full text-white text-sm" style="background-color: {{ color }}">
-                                    {{ level }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <!-- 图表行 2 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700"><i class="fas fa-chart-line"></i> 评分趋势</h3>
+                <div id="trendChart" style="height: 350px;"></div>
             </div>
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700"><i class="fas fa-bullseye"></i> 分数分布</h3>
+                <div id="scoreDistChart" style="height: 350px;"></div>
+            </div>
+        </div>
+
+        <!-- 部门统计 -->
+        <div class="chart-container mb-8">
+            <h3 class="text-lg font-semibold mb-4 text-gray-700"><i class="fas fa-building"></i> 部门统计</h3>
+            <div id="deptChart" style="height: 350px;"></div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex justify-center space-x-4">
+            <button onclick="loadData()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                <i class="fas fa-sync"></i> 刷新数据
+            </button>
+            <button onclick="exportData()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+                <i class="fas fa-file-excel"></i> 导出 Excel
+            </button>
         </div>
     </div>
 
     <script>
-        const levelDist = {{ level_dist | tojson }};
-        const rankings = {{ rankings | tojson }};
+        // 初始化图表
+        let levelChart, rankingChart, trendChart, scoreDistChart, deptChart;
 
-        // 等级分布图
-        new Chart(document.getElementById('levelChart'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(levelDist),
-                datasets: [{
-                    data: Object.values(levelDist),
-                    backgroundColor: [
-                        '#9333EA', '#10B981', '#3B82F6', '#6B7280',
-                        '#F59E0B', '#EF4444', '#DC2626', '#991B1B'
-                    ]
-                }]
+        function initCharts() {
+            levelChart = echarts.init(document.getElementById('levelChart'));
+            rankingChart = echarts.init(document.getElementById('rankingChart'));
+            trendChart = echarts.init(document.getElementById('trendChart'));
+            scoreDistChart = echarts.init(document.getElementById('scoreDistChart'));
+            deptChart = echarts.init(document.getElementById('deptChart'));
+        }
+
+        async function loadData() {
+            try {
+                // 获取人员数据
+                const membersRes = await fetch('/api/members');
+                const members = await membersRes.json();
+                
+                // 获取评价数据
+                const reviewsRes = await fetch('/api/reviews');
+                const reviews = await reviewsRes.json();
+                
+                // 更新统计卡片
+                document.getElementById('totalMembers').textContent = members.length;
+                document.getElementById('totalReviews').textContent = reviews.length;
+                
+                const avgScore = reviews.length > 0 
+                    ? (reviews.reduce((sum, r) => sum + r.score, 0) / reviews.length).toFixed(2)
+                    : 0;
+                document.getElementById('avgScore').textContent = avgScore;
+                
+                const currentMonth = new Date().toISOString().slice(0, 7);
+                const monthCount = reviews.filter(r => r.period === currentMonth).length;
+                document.getElementById('monthReviews').textContent = monthCount;
+                
+                // 等级分布
+                const levelDist = {};
+                reviews.forEach(r => {
+                    levelDist[r.level] = (levelDist[r.level] || 0) + 1;
+                });
+                
+                levelChart.setOption({
+                    tooltip: { trigger: 'item' },
+                    legend: { top: '5%', left: 'center' },
+                    series: [{
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        data: Object.entries(levelDist).map(([name, value]) => ({ name, value })),
+                        emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
+                    }]
+                });
+                
+                // 人员排名
+                const memberScores = members.map(m => ({
+                    name: m.name,
+                    score: m.average_score,
+                    count: m.review_count
+                })).sort((a, b) => b.score - a.score);
+                
+                rankingChart.setOption({
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                    xAxis: { type: 'value', min: 0, max: 5 },
+                    yAxis: { type: 'category', data: memberScores.map(m => m.name) },
+                    series: [{
+                        type: 'bar',
+                        data: memberScores.map(m => m.score),
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                { offset: 0, color: '#83bff6' },
+                                { offset: 1, color: '#188df0' }
+                            ])
+                        }
+                    }]
+                });
+                
+                // 评分趋势
+                const periodData = {};
+                reviews.forEach(r => {
+                    if (!periodData[r.period]) periodData[r.period] = { sum: 0, count: 0 };
+                    periodData[r.period].sum += r.score;
+                    periodData[r.period].count += 1;
+                });
+                
+                const trendData = Object.entries(periodData)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([period, data]) => ({
+                        period,
+                        avg: (data.sum / data.count).toFixed(2)
+                    }));
+                
+                trendChart.setOption({
+                    tooltip: { trigger: 'axis' },
+                    xAxis: { type: 'category', data: trendData.map(d => d.period) },
+                    yAxis: { type: 'value', min: 0, max: 5 },
+                    series: [{
+                        type: 'line',
+                        data: trendData.map(d => d.avg),
+                        smooth: true,
+                        areaStyle: { opacity: 0.3 },
+                        itemStyle: { color: '#5470c6' }
+                    }]
+                });
+                
+                // 分数分布
+                const scoreRanges = [
+                    { name: '0-2', min: 0, max: 2, count: 0 },
+                    { name: '2-3', min: 2, max: 3, count: 0 },
+                    { name: '3-3.5', min: 3, max: 3.5, count: 0 },
+                    { name: '3.5-4', min: 3.5, max: 4, count: 0 },
+                    { name: '4-4.5', min: 4, max: 4.5, count: 0 },
+                    { name: '4.5-5', min: 4.5, max: 5, count: 0 }
+                ];
+                
+                reviews.forEach(r => {
+                    const range = scoreRanges.find(sr => r.score >= sr.min && r.score < sr.max);
+                    if (range) range.count++;
+                });
+                
+                scoreDistChart.setOption({
+                    tooltip: { trigger: 'axis' },
+                    xAxis: { type: 'category', data: scoreRanges.map(r => r.name) },
+                    yAxis: { type: 'value' },
+                    series: [{
+                        type: 'bar',
+                        data: scoreRanges.map(r => r.count),
+                        itemStyle: { color: '#91cc75' }
+                    }]
+                });
+                
+                // 部门统计
+                const deptData = {};
+                members.forEach(m => {
+                    const dept = m.department || '未分配';
+                    if (!deptData[dept]) deptData[dept] = { count: 0, sum: 0 };
+                    deptData[dept].count += 1;
+                    deptData[dept].sum += m.average_score;
+                });
+                
+                const deptChart = echarts.init(document.getElementById('deptChart'));
+                deptChart.setOption({
+                    tooltip: { trigger: 'axis' },
+                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                    xAxis: { type: 'category', data: Object.keys(deptData) },
+                    yAxis: { type: 'value', name: '平均分' },
+                    series: [{
+                        type: 'bar',
+                        data: Object.entries(deptData).map(([dept, data]) => 
+                            (data.sum / data.count).toFixed(2)
+                        ),
+                        itemStyle: { color: '#fac858' }
+                    }]
+                });
+                
+                // 窗口大小变化时重新渲染
+                window.addEventListener('resize', () => {
+                    levelChart.resize();
+                    rankingChart.resize();
+                    trendChart.resize();
+                    scoreDistChart.resize();
+                    deptChart.resize();
+                });
+                
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                alert('加载数据失败，请刷新页面重试');
             }
-        });
+        }
 
-        // 评分分布图
-        const scoreRanges = {'5.0': 0, '4.0-4.9': 0, '3.0-3.9': 0, '2.0-2.9': 0, '0-1.9': 0};
-        rankings.forEach(item => {
-            if (item.score >= 5) scoreRanges['5.0']++;
-            else if (item.score >= 4) scoreRanges['4.0-4.9']++;
-            else if (item.score >= 3) scoreRanges['3.0-3.9']++;
-            else if (item.score >= 2) scoreRanges['2.0-2.9']++;
-            else scoreRanges['0-1.9']++;
-        });
+        function exportData() {
+            window.open('/api/export/reviews', '_blank');
+        }
 
-        new Chart(document.getElementById('scoreChart'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(scoreRanges),
-                datasets: [{
-                    label: '人数',
-                    data: Object.values(scoreRanges),
-                    backgroundColor: '#3B82F6'
-                }]
-            },
-            options: {
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                }
-            }
-        });
+        // 页面加载完成后初始化
+        window.onload = () => {
+            initCharts();
+            loadData();
+        };
     </script>
 </body>
 </html>

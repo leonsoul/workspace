@@ -10,18 +10,29 @@
 - WebSocket 实时更新
 """
 
-from flask import Flask, render_template, request, jsonify, g
+from flask import Flask, render_template, request, jsonify, g, send_file, make_response
 from flask_socketio import SocketIO, emit
 from sqlalchemy import or_
 from datetime import datetime
 import json
 from pathlib import Path
 import time
+import io
 
 # 导入数据库模型
 from database import (
     engine, Member, Review, Issue, Invitation,
     SessionLocal, init_db
+)
+
+# 导入 Excel 工具
+from excel_tools import (
+    export_members_to_excel,
+    export_reviews_to_excel,
+    import_members_from_excel,
+    import_reviews_from_excel,
+    generate_members_template,
+    generate_reviews_template
 )
 
 app = Flask(__name__)
@@ -364,6 +375,106 @@ def api_get_reviews():
         return jsonify([r.to_dict() for r in reviews])
     finally:
         db.close()
+
+
+# ============== Excel 导入导出 ==============
+
+@app.route('/api/export/members', methods=['GET'])
+def api_export_members():
+    """导出人员数据到 Excel"""
+    try:
+        excel_data = export_members_to_excel()
+        return send_file(
+            io.BytesIO(excel_data),
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'人员列表_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/export/reviews', methods=['GET'])
+def api_export_reviews():
+    """导出评价数据到 Excel"""
+    try:
+        member_id = request.args.get('member_id', type=int)
+        period = request.args.get('period')
+        excel_data = export_reviews_to_excel(member_id, period)
+        return send_file(
+            io.BytesIO(excel_data),
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'评价记录_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/import/members', methods=['POST'])
+def api_import_members():
+    """从 Excel 导入人员数据"""
+    if 'file' not in request.files:
+        return jsonify({'error': '未上传文件'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': '未选择文件'}), 400
+    
+    try:
+        file_content = file.read()
+        results = import_members_from_excel(file_content)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/import/reviews', methods=['POST'])
+def api_import_reviews():
+    """从 Excel 导入评价数据"""
+    if 'file' not in request.files:
+        return jsonify({'error': '未上传文件'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': '未选择文件'}), 400
+    
+    try:
+        file_content = file.read()
+        results = import_reviews_from_excel(file_content)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/template/members', methods=['GET'])
+def api_template_members():
+    """下载人员导入模板"""
+    try:
+        template_data = generate_members_template()
+        return send_file(
+            io.BytesIO(template_data),
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='人员导入模板.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/template/reviews', methods=['GET'])
+def api_template_reviews():
+    """下载评价导入模板"""
+    try:
+        template_data = generate_reviews_template()
+        return send_file(
+            io.BytesIO(template_data),
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='评价导入模板.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # ============== 健康检查和指标 ==============
