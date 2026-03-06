@@ -562,6 +562,38 @@ def stats():
                          level_dist=level_dist,
                          rankings=member_scores)
 
+
+# ============== API 端点 ==============
+
+@app.route('/health')
+def health():
+    """健康检查端点"""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.1.0-optimized'
+    }), 200
+
+
+@app.route('/metrics')
+def metrics():
+    """基础指标端点"""
+    try:
+        members = load_members()
+        reviews = load_reviews()
+        avg_score = sum(r.get('score', 0) for r in reviews) / len(reviews) if reviews else 0
+        
+        return jsonify({
+            'members_count': len(members),
+            'reviews_count': len(reviews),
+            'average_score': round(avg_score, 2),
+            'service': 'performance-review',
+            'version': '1.1.0-optimized'
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     init_data()
     # 生产环境关闭 debug 模式
