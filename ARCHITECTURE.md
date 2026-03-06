@@ -6,6 +6,35 @@
 
 ## Overview
 
+### 三层架构（按职能分组）
+
+```
+                    ClawOS (OpenClaw Core)
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+  Engineering           Operations              Growth
+  (工程开发)            (运维运营)              (增长)
+        │                     │                     │
+   ┌────┴────┐          ┌─────┴─────┐              │
+   │         │          │           │              │
+dev-agent  qa-agent  ops-agent  media-agent   (预留扩展)
+           │         │           │
+      code-review  deploy    content
+                   monitor    seo
+                              │
+        └─────────────────────┼─────────────────────┘
+                              │
+                        Data Layer
+                        (数据层)
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+               data-agent        research-agent
+```
+
+### 核心流程
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      ClawOS Core                             │
@@ -17,10 +46,7 @@
                               ↓
         ┌────────────────────────────────────────┐
         │           Agent Pool                   │
-        │  ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐
-        │  │ Dev │ │ QA  │ │ Ops │ │Data │ │Media│
-        │  │Agent│ │Agent│ │Agent│ │Agent│ │Agent│
-        │  └─────┘ └─────┘ └─────┘ └─────┘ └─────┘
+        │  Engineering  │  Operations  │  Data   │
         └────────────────────────────────────────┘
                               ↓
         ┌────────────────────────────────────────┐
@@ -113,6 +139,8 @@ agents/
 
 ## Agent Definitions
 
+## Phase 1: Core Agents (✅ 已完成)
+
 ### Dev Agent (开发)
 
 **Prompt**: 你是 ClawOS 开发专家，专注于代码编写、功能开发、API 设计
@@ -198,6 +226,41 @@ agents/
 
 ---
 
+## Phase 2: Enhanced Agents (⏳ 规划中)
+
+### Code Review Agent (代码审查)
+**Layer**: Engineering
+**Parent**: qa-agent
+**专注**: 代码质量审查、最佳实践检查、安全漏洞扫描
+
+### Deploy Agent (部署)
+**Layer**: Operations
+**Parent**: ops-agent
+**专注**: 应用部署、CI/CD、环境管理
+
+### Monitor Agent (监控)
+**Layer**: Operations
+**Parent**: ops-agent
+**专注**: 系统监控、告警、健康检查
+
+---
+
+## Phase 3: Growth Agents (⏳ 未来扩展)
+
+### Content Agent (内容)
+**Layer**: Operations
+**专注**: 内容生成、文档管理、博客发布
+
+### SEO Agent (优化)
+**Layer**: Operations
+**专注**: SEO 优化、关键词分析、排名跟踪
+
+### Research Agent (调研)
+**Layer**: Data Layer
+**专注**: 信息收集、竞品分析、趋势调研
+
+---
+
 ## Task Flow
 
 ```
@@ -243,8 +306,26 @@ workspace/
    - `PROMPT.md` - 角色
    - `RULES.md` - 规则
    - `SKILLS.md` - 技能
-3. 更新路由规则：`core/router/rules.py`
-4. 测试路由
+3. 更新路由规则：`core/orchestrator/ROUTER.md`
+4. 更新架构文档：`ARCHITECTURE.md`
+5. 测试路由
+
+### 分层设计原则
+
+- **Engineering**: 代码相关（开发、测试、审查）
+- **Operations**: 运维运营（部署、监控、媒体、内容）
+- **Growth**: 增长相关（预留扩展）
+- **Data Layer**: 数据相关（处理、调研）
+
+### Agent 拆分时机
+
+当一个 Agent 的职责过多时，考虑拆分：
+
+| 原 Agent | 拆分为 | 时机 |
+|---------|--------|------|
+| qa-agent | qa-agent + code-review-agent | 代码审查需求频繁 |
+| ops-agent | ops-agent + deploy-agent + monitor-agent | 部署/监控任务独立 |
+| data-agent | data-agent + research-agent | 调研任务增多 |
 
 ### 添加新 Skill
 
