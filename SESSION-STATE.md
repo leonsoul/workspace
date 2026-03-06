@@ -43,6 +43,12 @@
 - [x] 人员评分评价系统（命令行版）- ✅ 完成
 - [x] 人员评分评价系统（Web 版）- ✅ 完成
 - [x] 钉钉通知配置 - ✅ 完成
+- [x] QQ Bot 认证修复 - ✅ 完成 (更新 clientSecret)
 - [ ] 测试多 Agent 路由功能
+
+---
+
+## Recent Fixes
+- **2026-03-06 16:33** - QQ Bot 认证失败修复：更新 clientSecret 为新凭证 `P81mzfbbWmk03C1zX9Sr1wvII2Nsfyj6`
 
 ---
