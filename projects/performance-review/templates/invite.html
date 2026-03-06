@@ -40,8 +40,12 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-700 mb-2">被邀请人邮箱/钉钉 *</label>
-                    <input type="text" id="inviteeEmail" required class="w-full border rounded-lg px-4 py-2" placeholder="例如：zhangsan@company.com">
+                    <label class="block text-gray-700 mb-2">被邀请人联系方式 *</label>
+                    <input type="text" id="inviteeEmail" required class="w-full border rounded-lg px-4 py-2" placeholder="钉钉手机号：13800138000 或 邮箱：zhangsan@company.com">
+                    <p class="text-sm text-gray-500 mt-1">
+                        <i class="fas fa-info-circle"></i> 
+                        填写 <strong>钉钉手机号</strong> 将发送钉钉消息，填写 <strong>邮箱</strong> 将发送邮件
+                    </p>
                 </div>
 
                 <div>
@@ -54,10 +58,11 @@
                         <i class="fas fa-info-circle"></i> 邀请说明
                     </h4>
                     <ul class="text-sm text-blue-700 space-y-1">
-                        <li>• 邀请链接将通过邮件/钉钉发送</li>
+                        <li>• <strong>钉钉手机号</strong>：发送钉钉消息（推荐）</li>
+                        <li>• <strong>邮箱</strong>：发送邮件通知</li>
                         <li>• 邀请有效期 7 天</li>
-                        <li>• 被邀请人可以评价指定人员</li>
-                        <li>• 评价完成后你会收到通知</li>
+                        <li>• 被邀请人可以评价指定人员或所有人</li>
+                        <li>• 评价完成后自动记录</li>
                     </ul>
                 </div>
 
@@ -90,11 +95,21 @@
                 body: JSON.stringify(data)
             });
 
+            const result = await res.json();
+
             if (res.ok) {
-                alert('邀请已发送！');
+                let msg = '邀请已保存！\n\n';
+                if (result.sent) {
+                    msg += `✅ 已通过${result.method === 'mobile' ? '钉钉' : '邮件'}发送通知`;
+                } else {
+                    msg += `⚠️ 通知发送失败（请检查配置）\n\n`;
+                    msg += `被邀请人：${data.invitee_email}\n`;
+                    msg += `评价对象：${data.member_name || '所有人'}`;
+                }
+                alert(msg);
                 window.location.href = '/invitations';
             } else {
-                alert('发送失败');
+                alert('保存失败');
             }
         });
     </script>

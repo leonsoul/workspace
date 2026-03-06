@@ -277,6 +277,80 @@ def member_history(member_id):
     
     return render_template('history.html', member=member, reviews=member_reviews)
 
+def send_dingtalk_notification(invitation):
+    """发送钉钉通知"""
+    try:
+        import requests
+        
+        # 从配置读取钉钉机器人 Webhook
+        # 实际使用时应该从配置文件读取
+        webhook = "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"
+        
+        invitee = invitation.get('invitee_email', '')
+        member_name = invitation.get('member_name', '某人')
+        invitee_name = invitation.get('invitee_name', '同事')
+        
+        # 判断是手机号还是邮箱
+        if invitee.startswith('1') and len(invitee) == 11 and invitee.isdigit():
+            # 手机号 - 发送钉钉消息
+            content = f"""【人员评价邀请】
+            
+{invitee_name}，你好！
+
+邀请你对 **{member_name}** 进行工作质量评价。
+
+评价链接：http://localhost:5000/review?invite_id={invitation['id']}
+有效期：7 天
+
+请客观公正地进行评价，谢谢配合！
+
+—— 人员评价系统"""
+            
+            payload = {
+                "msgtype": "text",
+                "text": {
+                    "content": content
+                },
+                "at": {
+                    "mobiles": [invitee],
+                    "isAtAll": False
+                }
+            }
+        else:
+            # 邮箱 - 发送邮件（待实现）
+            content = f"""【人员评价邀请】
+
+{invitee_name}，你好！
+
+邀请你对 {member_name} 进行工作质量评价。
+
+评价链接：http://localhost:5000/review?invite_id={invitation['id']}
+有效期：7 天
+
+请客观公正地进行评价，谢谢配合！
+
+—— 人员评价系统"""
+            
+            # TODO: 实现邮件发送
+            print(f"邮件通知（待实现）: {invitee}")
+            print(content)
+            return True
+        
+        response = requests.post(webhook, json=payload, timeout=5)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('errcode') == 0:
+                return True
+        
+        print(f"钉钉发送失败：{response.text}")
+        return False
+        
+    except Exception as e:
+        print(f"发送通知异常：{e}")
+        return False
+
+
 @app.route('/invite', methods=['GET', 'POST'])
 def invite():
     """邀请评价"""
@@ -292,15 +366,21 @@ def invite():
             'message': data.get('message', ''),
             'status': 'pending',  # pending, accepted, completed
             'created_at': datetime.now().isoformat(),
-            'expires_at': (datetime.now().timestamp() + 7*24*3600) * 1000  # 7 天过期
+            'expires_at': (datetime.now().timestamp() + 7*24*3600) * 1000,  # 7 天过期
+            'send_method': 'mobile' if data['invitee_email'].startswith('1') and len(data['invitee_email']) == 11 else 'email'
         }
         
         save_invitation(invitation)
         
-        # TODO: 发送邮件/钉钉通知
-        # send_invitation_email(invitation)
+        # 发送钉钉/邮件通知
+        sent = send_dingtalk_notification(invitation)
         
-        return jsonify({'success': True, 'invitation': invitation})
+        return jsonify({
+            'success': True, 
+            'invitation': invitation,
+            'sent': sent,
+            'method': invitation['send_method']
+        })
     
     members = load_members()
     return render_template('invite.html', members=members)

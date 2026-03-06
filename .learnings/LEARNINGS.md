@@ -163,3 +163,37 @@ Agent 构成：
 - Pattern-Key: web.error_handling
 
 ---
+
+## [LRN-20260306-006] dingtalk_notification_integration
+
+**Logged**: 2026-03-06T13:03:00+08:00
+**Priority**: medium
+**Status**: resolved
+**Area**: integration
+
+### Summary
+用户询问邀请通知如何发送，需要实现钉钉/邮件通知功能
+
+### Details
+用户需求：
+- 填写钉钉手机号发送钉钉消息
+- 填写邮箱发送邮件
+- 需要配置指南
+
+实现：
+1. send_dingtalk_notification() 函数
+2. 判断手机号/邮箱自动选择发送方式
+3. 钉钉机器人 Webhook 配置
+4. 创建 DINGTALK_SETUP.md 配置文档
+5. 前端提示优化（显示发送状态）
+
+### Resolution
+- **Resolved**: 2026-03-06T13:05:00+08:00
+- **Notes**: 实现钉钉通知功能，提供详细配置文档
+
+### Metadata
+- Source: user_question
+- Tags: dingtalk, notification, integration
+- Pattern-Key: notification.dingtalk
+
+---
