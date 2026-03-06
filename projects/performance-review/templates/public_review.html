@@ -15,50 +15,6 @@
                 <p class="text-gray-600">请客观公正地进行评价</p>
             </div>
 
-            {% if not invitation %}
-            <div class="text-center py-12">
-                <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">邀请无效或已过期</h2>
-                <p class="text-gray-600">该评价链接不存在或已超过 7 天有效期</p>
-            </div>
-            {% else %}
-            <!-- 邀请信息 -->
-            <div class="bg-blue-50 p-6 rounded-lg mb-8">
-                <h3 class="font-bold text-lg mb-4">评价信息</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <div class="text-gray-600 text-sm">评价对象</div>
-                        <div class="font-semibold">
-                            {% if invitation.member_name and invitation.member_name != '-- 评价所有人 --' %}
-                                {{ invitation.member_name }}
-                            {% else %}
-                                所有人（由评价人选择）
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div>
-                        <div class="text-gray-600 text-sm">被邀请人</div>
-                        <div class="font-semibold">{{ invitation.invitee_name or invitation.invitee_email }}</div>
-                    </div>
-                    <div>
-                        <div class="text-gray-600 text-sm">有效期</div>
-                        <div class="font-semibold">7 天</div>
-                    </div>
-                    <div>
-                        <div class="text-gray-600 text-sm">状态</div>
-                        <div class="font-semibold">
-                            {% if invitation.status == 'completed' %}
-                                <span class="text-green-600">✅ 已完成</span>
-                            {% elif invitation.status == 'accepted' %}
-                                <span class="text-blue-600">✅ 已接受</span>
-                            {% else %}
-                                <span class="text-yellow-600">⏳ 待评价</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {% if invitation.status == 'completed' %}
             <!-- 已完成提示 -->
             <div class="text-center py-12">
