@@ -1,32 +1,28 @@
 #!/usr/bin/env python3
 """
-人员评分评价系统 - Web 应用 (SQLite + WebSocket 版本)
+人员评分评价系统 - Web 应用 (SQLite 版本)
 
 功能:
 - 人员管理（增删改查）
 - 评价记录
 - 邀请评价
 - 数据统计
-- WebSocket 实时更新
 """
 
-from flask import Flask, render_template, request, jsonify, g
-from flask_socketio import SocketIO, emit
+from flask import Flask, render_template, request, jsonify, redirect, url_for, g
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from datetime import datetime
 import json
 from pathlib import Path
-import time
 
 # 导入数据库模型
 from database import (
     engine, Member, Review, Issue, Invitation,
-    SessionLocal, init_db
+    SessionLocal, init_db, get_db
 )
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'performance-review-secret-key'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # 配置
 BASE_DIR = Path(__file__).parent
@@ -37,6 +33,12 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 init_db()
 
 # ============== 数据库会话管理 ==============
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    """请求结束时关闭数据库会话"""
+    pass  # 使用 SessionLocal 管理
+
 
 def get_session():
     """获取数据库会话"""
@@ -71,31 +73,44 @@ def calculate_score(issues_data, bonuses=None, attitude_issue=False):
     penalty = 0.0
     bonus_total = 0.0
     
+    # 统计问题
     issue_count = {'P0': 0, 'P1': 0, 'P2': 0, 'P3': 0}
     for issue in issues_data:
         level = issue.get('level', 'P3')
         if level in issue_count:
             issue_count[level] += 1
         
-        if level == 'P0': penalty += 5.0
-        elif level == 'P1': penalty += 2.0
-        elif level == 'P2': penalty += 0.5
-        elif level == 'P3': penalty += 0.25
+        # 扣分
+        if level == 'P0':
+            penalty += 5.0
+        elif level == 'P1':
+            penalty += 2.0
+        elif level == 'P2':
+            penalty += 0.5
+        elif level == 'P3':
+            penalty += 0.25
     
+    # P0 直接到 0
     if issue_count['P0'] > 0:
         final_score = 0.0
     else:
+        # 加分
         if bonuses:
             for bonus in bonuses:
-                if bonus == 'continuous_clean': bonus_total += 0.5
-                elif bonus == 'innovation': bonus_total += 0.5
-                elif bonus == 'fix_proactive': bonus_total += 0.25
+                if bonus == 'continuous_clean':
+                    bonus_total += 0.5
+                elif bonus == 'innovation':
+                    bonus_total += 0.5
+                elif bonus == 'fix_proactive':
+                    bonus_total += 0.25
         
+        # 态度问题扣分
         if attitude_issue:
             penalty += 1.0
         
         final_score = max(0, min(5.0, base_score - penalty + bonus_total))
     
+    # 确定等级
     level_name, level_desc = get_level(final_score)
     
     return {
@@ -111,47 +126,6 @@ def calculate_score(issues_data, bonuses=None, attitude_issue=False):
     }
 
 
-# ============== WebSocket 事件 ==============
-
-@socketio.on('connect')
-def handle_connect():
-    """客户端连接"""
-    print(f'🔌 客户端连接：{request.sid}')
-    emit('server_message', {'data': '已连接到实时通知服务'})
-
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    """客户端断开"""
-    print(f'🔌 客户端断开：{request.sid}')
-
-
-@socketio.on('request_update')
-def handle_request_update(data):
-    """客户端请求数据更新"""
-    db = get_session()
-    try:
-        members = db.query(Member).filter_by(is_active=True).all()
-        reviews = db.query(Review).order_by(Review.created_at.desc()).limit(10).all()
-        
-        emit('data_update', {
-            'members': [m.to_dict() for m in members],
-            'recent_reviews': [r.to_dict() for r in reviews],
-            'timestamp': datetime.now().isoformat()
-        })
-    finally:
-        db.close()
-
-
-def broadcast_update(event_type, data=None):
-    """广播数据更新"""
-    socketio.emit('update', {
-        'event': event_type,
-        'data': data,
-        'timestamp': datetime.now().isoformat()
-    })
-
-
 # ============== 页面路由 ==============
 
 @app.route('/')
@@ -165,6 +139,28 @@ def index():
         db.close()
 
 
+@app.route('/invite')
+def invite():
+    """邀请评价页面"""
+    db = get_session()
+    try:
+        members = db.query(Member).filter_by(is_active=True).all()
+        return render_template('invite.html', members=members)
+    finally:
+        db.close()
+
+
+@app.route('/invitations')
+def invitations():
+    """邀请记录页面"""
+    db = get_session()
+    try:
+        invitations = db.query(Invitation).order_by(Invitation.created_at.desc()).all()
+        return render_template('invitations.html', invitations=invitations)
+    finally:
+        db.close()
+
+
 @app.route('/stats')
 def stats():
     """统计页面"""
@@ -173,13 +169,16 @@ def stats():
         total_members = db.query(Member).filter_by(is_active=True).count()
         total_reviews = db.query(Review).count()
         
+        # 平均分
         reviews = db.query(Review).all()
         avg_score = sum(r.score for r in reviews) / len(reviews) if reviews else 0
         
+        # 等级分布
         level_dist = {}
         for r in reviews:
             level_dist[r.level] = level_dist.get(r.level, 0) + 1
         
+        # 人员排名
         member_scores = []
         members = db.query(Member).filter_by(is_active=True).all()
         for m in members:
@@ -223,6 +222,7 @@ def api_add_member():
     data = request.json
     db = get_session()
     try:
+        # 检查重名
         existing = db.query(Member).filter_by(name=data['name']).first()
         if existing:
             return jsonify({'error': '人员已存在'}), 400
@@ -235,13 +235,23 @@ def api_add_member():
         db.add(member)
         db.commit()
         
-        # 广播更新
-        broadcast_update('member_added', member.to_dict())
-        
         return jsonify(member.to_dict()), 201
     except Exception as e:
         db.rollback()
         return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+
+@app.route('/api/member/<int:member_id>', methods=['GET'])
+def api_get_member(member_id):
+    """获取人员详情"""
+    db = get_session()
+    try:
+        member = db.query(Member).filter_by(id=member_id).first()
+        if not member:
+            return jsonify({'error': '人员不存在'}), 404
+        return jsonify(member.to_dict())
     finally:
         db.close()
 
@@ -262,10 +272,6 @@ def api_edit_member(member_id):
         member.updated_at = datetime.now()
         
         db.commit()
-        
-        # 广播更新
-        broadcast_update('member_updated', member.to_dict())
-        
         return jsonify(member.to_dict())
     except Exception as e:
         db.rollback()
@@ -285,10 +291,6 @@ def api_delete_member(member_id):
         
         member.is_active = False
         db.commit()
-        
-        # 广播更新
-        broadcast_update('member_deleted', {'id': member_id})
-        
         return jsonify({'success': True})
     except Exception as e:
         db.rollback()
@@ -303,12 +305,14 @@ def api_add_review():
     data = request.json
     db = get_session()
     try:
+        # 计算评分
         issues_data = data.get('issues', [])
         bonuses = data.get('bonuses', [])
         attitude_issue = data.get('attitude_issue', False)
         
         score_data = calculate_score(issues_data, bonuses, attitude_issue)
         
+        # 创建评价
         review = Review(
             member_id=data['member_id'],
             period=data.get('period', datetime.now().strftime('%Y-%m')),
@@ -334,9 +338,6 @@ def api_add_review():
             )
             db.add(issue)
         db.commit()
-        
-        # 广播更新
-        broadcast_update('review_added', review.to_dict())
         
         return jsonify(review.to_dict()), 201
     except Exception as e:
@@ -366,6 +367,38 @@ def api_get_reviews():
         db.close()
 
 
+@app.route('/api/invitation/create', methods=['POST'])
+def api_create_invitation():
+    """创建邀请"""
+    import secrets
+    from datetime import timedelta
+    
+    data = request.json
+    db = get_session()
+    try:
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now() + timedelta(days=7)
+        
+        invitation = Invitation(
+            member_id=data.get('member_id'),
+            reviewer_email=data['reviewer_email'],
+            reviewer_name=data.get('reviewer_name', ''),
+            token=token,
+            expires_at=expires_at
+        )
+        db.add(invitation)
+        db.commit()
+        
+        # TODO: 发送邮件
+        
+        return jsonify(invitation.to_dict()), 201
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+
 # ============== 健康检查和指标 ==============
 
 @app.route('/health')
@@ -374,9 +407,8 @@ def health():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'version': '1.3.0-websocket',
-        'database': 'sqlite',
-        'websocket': 'enabled'
+        'version': '1.2.0-sqlite',
+        'database': 'sqlite'
     }), 200
 
 
@@ -395,9 +427,8 @@ def metrics():
             'reviews_count': reviews_count,
             'average_score': round(avg, 2),
             'service': 'performance-review',
-            'version': '1.3.0-websocket',
-            'database': 'sqlite',
-            'websocket': 'enabled'
+            'version': '1.2.0-sqlite',
+            'database': 'sqlite'
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -406,6 +437,6 @@ def metrics():
 
 
 if __name__ == '__main__':
-    # 生产环境请使用:
-    # gunicorn -w 2 -k eventlet -b 0.0.0.0:5000 app:app
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+    # 生产环境请使用 gunicorn:
+    # gunicorn -w 4 -b 0.0.0.0:5000 --timeout 120 app:app
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)

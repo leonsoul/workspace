@@ -109,3 +109,17 @@ Dev:
 
 **Version**: 1.0  
 **Last Updated**: 2026-03-06
+
+## 集成技能 (skills_bene)
+
+### 代码审查
+- GitLab MR 审查
+- GitHub PR 审查
+- AI 深度审查
+- Bug 扫描
+
+调用:
+```bash
+cd /home/admin/.openclaw/workspace/projects/skills_bene
+python3 skills/ai-code-review/review.py --path <代码路径>
+```

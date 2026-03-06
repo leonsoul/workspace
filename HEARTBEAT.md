@@ -1,6 +1,6 @@
 # HEARTBEAT.md
 
-**Last Check**: 2026-03-06T18:23:00+08:00
+**Last Check**: 2026-03-06T18:39:00+08:00
 
 ---
 
@@ -34,6 +34,45 @@
 ---
 
 ## Notes
+
+### 2026-03-06 18:39 检查
+
+**Self-Improvement**
+- ✅ 学习 Flask-SocketIO 实现实时通知
+- ✅ 掌握 SQLAlchemy ORM 数据库操作
+
+**Proactive Behaviors**
+- ✅ 完成 SQLite 数据库迁移
+- ✅ 实现 WebSocket 实时更新
+- ✅ 添加测试数据演示功能
+
+**Memory**
+- ✅ HEARTBEAT.md 持续更新
+
+**Security**
+- ✅ 无注入尝试
+- ✅ SOUL.md 未变更
+
+**Self-Healing**
+- ✅ 解决 pip 版本兼容问题
+- ✅ 修复数据库外键约束问题
+
+**服务状态**
+- ✅ Systemd 服务运行中
+- ✅ SQLite 数据库正常 (5 人员，15 条评价)
+- ✅ WebSocket 实时通知已启用
+- ✅ 版本：1.3.0-websocket
+
+**今日进度**
+- ✅ Systemd 部署 (完成)
+- ✅ SQLite 数据库模型 (完成)
+- ✅ 数据迁移脚本 (完成)
+- ✅ app.py 数据库集成 (完成)
+- ✅ WebSocket 实时更新 (完成)
+- ⏳ 批量导入导出 Excel (待开始)
+- ⏳ 数据可视化图表 (待开始)
+
+---
 
 ### 2026-03-06 18:23 检查
 
