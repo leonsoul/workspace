@@ -265,3 +265,34 @@ Agent 构成：
 - Pattern-Key: growth.proactive_learning
 
 ---
+
+## [LRN-20260306-009] new_name_da_congming
+
+**Logged**: 2026-03-06T17:38:00+08:00
+**Priority**: medium
+**Status**: resolved
+**Area**: identity
+
+### Summary
+用户王犇给起新名字：大聪明
+
+### Details
+新名字含义：
+- 大：格局大、能力强
+- 聪明：学习快、解决问题快
+
+更新文件：
+- IDENTITY.md - 添加新名字
+- SOUL.md - 更新身份说明
+- 学习记录 - 记录命名历史
+
+### Resolution
+- **Resolved**: 2026-03-06T17:40:00+08:00
+- **Notes**: 正式更名为"大聪明"，昵称 ClawOS 🦞
+
+### Metadata
+- Source: user_decision
+- Tags: identity, name, branding
+- Pattern-Key: identity.naming
+
+---

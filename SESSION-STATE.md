@@ -14,6 +14,11 @@
 - **GitHub**: leonsoul
 - **Timezone**: Asia/Shanghai
 
+## My Identity
+- **Name**: 大聪明 (Da Congming / Big Smart)
+- **Nickname**: ClawOS 🦞
+- **Motto**: 持续学习，持续进化，持续成长！
+
 ## Decisions Made
 1. ✅ SSH 密钥已生成并配置到 GitHub
 2. ✅ Git 用户信息已配置
