@@ -310,6 +310,18 @@ def invitations():
     """邀请记录"""
     invitations = load_invitations()
     invitations.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    # 添加时间转换辅助函数
+    def timestamp_to_date(ts):
+        try:
+            if isinstance(ts, (int, float)):
+                return datetime.fromtimestamp(ts / 1000).strftime('%Y-%m-%d')
+            return datetime.fromisoformat(ts[:19]).strftime('%Y-%m-%d')
+        except:
+            return '未知'
+    
+    app.jinja_env.filters['timestamp_to_date'] = timestamp_to_date
+    
     return render_template('invitations.html', invitations=invitations)
 
 @app.route('/stats')

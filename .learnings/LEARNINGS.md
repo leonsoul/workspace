@@ -130,3 +130,36 @@ Agent 构成：
 - Pattern-Key: clawos.core_architecture
 
 ---
+
+## [LRN-20260306-005] web_app_error_handling
+
+**Logged**: 2026-03-06T12:59:00+08:00
+**Priority**: high
+**Status**: resolved
+**Area**: frontend
+
+### Summary
+人员评价系统 Web 应用出现模板错误，需要完善错误处理
+
+### Details
+问题：
+1. 邀请记录页面报错 - 时间戳转换过滤器未注册
+2. 邀请评价只能选择特定人员，不能评价所有人
+3. stats.html 使用未定义的 get_level 函数
+
+修复：
+1. 在 app.py 中注册 timestamp_to_date 过滤器
+2. 邀请评价添加"所有人"选项（留空）
+3. stats.html 改用内联条件判断等级
+4. 添加空值检查，避免 None 访问
+
+### Resolution
+- **Resolved**: 2026-03-06T13:00:00+08:00
+- **Notes**: 修复所有模板错误，增强健壮性
+
+### Metadata
+- Source: user_feedback
+- Tags: web, flask, error-handling, bug-fix
+- Pattern-Key: web.error_handling
+
+---

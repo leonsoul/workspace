@@ -101,7 +101,23 @@
                             </td>
                             <td class="py-3 px-4 text-gray-600">{{ item.count }}</td>
                             <td class="py-3 px-4">
-                                {% set level, color = get_level(item.score) %}
+                                {% if item.score >= 4.5 %}
+                                    {% set level = "卓越" %}{% set color = "#9333EA" %}
+                                {% elif item.score >= 4.0 %}
+                                    {% set level = "优秀" %}{% set color = "#10B981" %}
+                                {% elif item.score >= 3.75 %}
+                                    {% set level = "良好" %}{% set color = "#3B82F6" %}
+                                {% elif item.score >= 3.5 %}
+                                    {% set level = "正常" %}{% set color = "#6B7280" %}
+                                {% elif item.score >= 3.0 %}
+                                    {% set level = "及格" %}{% set color = "#F59E0B" %}
+                                {% elif item.score >= 2.0 %}
+                                    {% set level = "质量差" %}{% set color = "#EF4444" %}
+                                {% elif item.score >= 1.0 %}
+                                    {% set level = "严重质量问题" %}{% set color = "#DC2626" %}
+                                {% else %}
+                                    {% set level = "完全不符合" %}{% set color = "#991B1B" %}
+                                {% endif %}
                                 <span class="px-3 py-1 rounded-full text-white text-sm" style="background-color: {{ color }}">
                                     {{ level }}
                                 </span>
