@@ -3,10 +3,10 @@ Description=Performance Review System
 After=network.target
 
 [Service]
-Type=simple
+Type=notify
 User=admin
 WorkingDirectory=/home/admin/.openclaw/workspace/projects/performance-review
-ExecStart=/usr/bin/python3 app.py
+ExecStart=/home/admin/.local/bin/gunicorn -w 2 -b 0.0.0.0:5000 app:app
 Restart=always
 RestartSec=5
 StandardOutput=append:/tmp/performance-review.log

@@ -24,8 +24,19 @@ def check_service():
     """检查服务是否可访问"""
     try:
         response = requests.get(CONFIG['url'], timeout=5)
-        return response.status_code == 200
-    except:
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"HTTP 状态码异常：{response.status_code}")
+            return False
+    except requests.exceptions.ConnectionError:
+        print("连接失败 - 服务未运行")
+        return False
+    except requests.exceptions.Timeout:
+        print("连接超时")
+        return False
+    except Exception as e:
+        print(f"检查异常：{e}")
         return False
 
 def restart_service():
