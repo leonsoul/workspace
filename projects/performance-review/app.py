@@ -282,9 +282,8 @@ def send_dingtalk_notification(invitation):
     try:
         import requests
         
-        # 从配置读取钉钉机器人 Webhook
-        # 实际使用时应该从配置文件读取
-        webhook = "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"
+        # 钉钉机器人 Webhook
+        webhook = "https://oapi.dingtalk.com/robot/send?access_token=7acf606300e4ba07aa0795f6d6c33a5c1d11b7787f58e0aa3240ae20ceac2590"
         
         invitee = invitation.get('invitee_email', '')
         member_name = invitation.get('member_name', '某人')
