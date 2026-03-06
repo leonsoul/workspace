@@ -52,11 +52,12 @@ log "✓ 已提交：$COMMIT_MSG"
 
 # 推送
 log "正在推送到 GitHub..."
-if git push origin master 2>&1 | tee -a "$LOG_FILE"; then
-    log "${GREEN}✓ 推送成功！${NC}"
-else
+PUSH_OUTPUT=$(git push origin master 2>&1) || {
     log "${RED}✗ 推送失败，请检查 SSH 密钥和远程仓库配置${NC}"
+    log "$PUSH_OUTPUT"
     exit 1
-fi
+}
+echo "$PUSH_OUTPUT" | tee -a "$LOG_FILE"
+log "${GREEN}✓ 推送成功！${NC}"
 
 log "${GREEN}=== Git Auto-Sync 完成 ===${NC}"

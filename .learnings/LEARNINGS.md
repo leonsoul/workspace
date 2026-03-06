@@ -84,3 +84,49 @@
 - Pattern-Key: user.project_selection
 
 ---
+
+## [LRN-20260306-004] clawos_multi_agent_architecture
+
+**Logged**: 2026-03-06T11:43:00+08:00
+**Priority**: critical
+**Status**: resolved
+**Area**: backend
+
+### Summary
+用户要求实现完整的 ClawOS 多 Agent 架构系统
+
+### Details
+架构设计：
+```
+ClawOS（中枢）
+ │
+ ├── dev-agent      (开发)
+ ├── qa-agent       (测试)
+ ├── ops-agent      (运维)
+ ├── data-agent     (数据处理)
+ └── media-agent    (媒体处理)
+```
+
+中枢职责：
+- 任务接收 → 智能分配 → Agent 执行 → 调用工具 → 返回结果
+
+Agent 构成：
+- Prompt（角色定义）
+- Rules（行为规则）
+- Skills（工具调用）
+
+### Resolution
+- **Resolved**: 2026-03-06T11:50:00+08:00
+- **Notes**: 完整实现多 Agent 架构，包括：
+  - 5 个专用 Agent（dev/qa/ops/data/media）
+  - 任务路由规则（ROUTER.md）
+  - 总览文档（AGENTS-OVERVIEW.md）
+  - 架构文档（ARCHITECTURE.md）
+  - 每个 Agent 的 PROMPT.md + RULES.md + SKILLS.md
+
+### Metadata
+- Source: user_request
+- Tags: architecture, multi-agent, orchestration
+- Pattern-Key: clawos.core_architecture
+
+---
