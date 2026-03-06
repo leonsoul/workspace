@@ -6,14 +6,42 @@
 
 ## 快速开始
 
-### 1. 计算评分
+### 启动服务
+
+```bash
+cd /home/admin/.openclaw/workspace/projects/performance-review
+
+# 方式 1：直接启动
+nohup python3 app.py > /tmp/performance-review.log 2>&1 &
+
+# 方式 2：使用监控脚本（推荐）
+bash monitor.sh
+
+# 方式 3：带健康检查
+nohup python3 health-check.py > /tmp/health-check.log 2>&1 &
+```
+
+### 检查状态
+
+```bash
+# 查看进程
+ps aux | grep "python3 app.py"
+
+# 查看日志
+tail -f /tmp/performance-review.log
+
+# 检查 HTTP
+curl http://localhost:5000
+```
+
+### 计算评分
 
 ```bash
 cd /home/admin/.openclaw/workspace/projects/performance-review
 python3 calculate-score.py
 ```
 
-### 2. 添加评价
+### 添加评价
 
 ```python
 from calculate_score import calculate_score, save_review
