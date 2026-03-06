@@ -16,8 +16,8 @@ CONFIG = {
     'port': 5000,
     'workdir': '/home/admin/.openclaw/workspace/projects/performance-review',
     'log_file': '/tmp/performance-review.log',
-    'check_interval': 300,  # 5 分钟检查一次
-    'max_retries': 3
+    'check_interval': 60,   # 1 分钟检查一次
+    'max_retries': 2
 }
 
 def check_service():

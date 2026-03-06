@@ -1,0 +1,20 @@
+[Unit]
+Description=Performance Review System
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/.openclaw/workspace/projects/performance-review
+ExecStart=/usr/bin/python3 app.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/tmp/performance-review.log
+StandardError=append:/tmp/performance-review.log
+
+# 资源限制
+LimitNOFILE=65535
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

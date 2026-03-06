@@ -564,4 +564,5 @@ def stats():
 
 if __name__ == '__main__':
     init_data()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # 生产环境关闭 debug 模式
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
