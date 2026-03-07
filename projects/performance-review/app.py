@@ -176,6 +176,69 @@ def index():
         db.close()
 
 
+@app.route('/invite', methods=['GET', 'POST'])
+def invite():
+    """邀请评价页面"""
+    db = get_session()
+    try:
+        if request.method == 'GET':
+            members = db.query(Member).filter_by(is_active=True).all()
+            return render_template('invite.html', members=members)
+        
+        # POST: 创建邀请
+        import secrets
+        from datetime import timedelta
+        
+        data = request.json
+        member_id = data.get('member_id')
+        member_name = data.get('member_name', '所有人')
+        invitee_name = data.get('invitee_name', '')
+        invitee_email = data.get('invitee_email', '')
+        message = data.get('message', '')
+        
+        # 生成邀请码
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now() + timedelta(days=7)
+        
+        invitation = Invitation(
+            member_id=member_id,
+            reviewer_email=invitee_email,
+            reviewer_name=invitee_name,
+            token=token,
+            expires_at=expires_at
+        )
+        db.add(invitation)
+        db.commit()
+        
+        # TODO: 发送钉钉或邮件通知
+        # 这里可以根据 invitee_email 的格式判断发送方式
+        sent = False
+        method = None
+        
+        return jsonify({
+            'success': True,
+            'invitation': invitation.to_dict(),
+            'sent': sent,
+            'method': method
+        }), 201
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+
+@app.route('/invitations')
+def invitations():
+    """邀请记录页面"""
+    db = get_session()
+    try:
+        invitations = db.query(Invitation).order_by(Invitation.created_at.desc()).all()
+        return render_template('invitations.html', invitations=invitations)
+    finally:
+        db.close()
+
+
 @app.route('/stats')
 def stats():
     """统计页面"""
